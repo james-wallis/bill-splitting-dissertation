@@ -43,11 +43,20 @@ class Starling {
     return response.data;
   }
 
-  async getIdentity(accessToken) {
-    const url = `${this.ApiUrl}/api/v2/identity/individual`;
+  async getAPI(endpoint, accessToken) {
+    const url = `${this.ApiUrl}${endpoint}`;
     const headers = { headers: { Authorization: `Bearer ${accessToken}` } };
-    const response = await axios.get(url, headers);
+    return await axios.get(url, headers);
+  }
+
+  async getIdentity(accessToken) {
+    const response = await this.getAPI('/api/v2/identity/individual', accessToken);
     console.log(response.status);
+    return response.data;
+  }
+
+  async getToken(accessToken) {
+    const response = await this.getAPI('/api/v2/identity/token', accessToken);
     return response.data;
   }
 }
