@@ -7,6 +7,7 @@
     "dotenv": "^7.0.0",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
+    "express-socket.io-session": "^1.3.5",
     "fs-extra": "^7.0.1",
     "querystring": "^0.2.0",
     "react": "^16.8.4",
@@ -22,7 +23,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dev-server": "nodemon --verbose --ignore token-store.json server/server.js",
+    "dev-server": "nodemon --verbose --ignore src/ --ignore token-store.json server/server.js",
     "server": "node server/server.js"
   },
   "eslintConfig": {

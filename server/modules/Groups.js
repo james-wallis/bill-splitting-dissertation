@@ -12,22 +12,32 @@ class Groups {
     return this.array[id];
   }
 
+  delete(id) {
+    delete this.array[id];
+    return this.array;
+  }
+
+  // Check if a given user is in a group, if no then return false, if yes then return that group
   isUserInGroup(userID) {
     const array = this.array;
     for (const el in array) {
       const group = array[el];
-      const lead = group.getLeadMember();
-      if (lead === userID) return true;
-      // Uncomment when other members are implemented
-      // const otherMembers = group.getOtherMembers();
-      // if (otherMembers || otherMembers.length > 0) {
-      //   for (let j = 0; j < otherMembers.length; j++) {
-      //     const member = otherMembers[j];
-
-      //   }
-      // }
+      const members = group.getAllMembers();
+      for (let j = 0; j < members.length; j++) {
+        const member = members[j];
+        if (member === userID) return group;
+      }
     }
-  }  
+  }
+
+  getGroupFromEndpoint(endpoint) {
+    const array = this.array;
+    for (const el in array) {
+      const group = array[el];
+      if (group.getEndpoint() === `/${endpoint}`) return group;
+    }
+    return null;
+  }
 
 
 }

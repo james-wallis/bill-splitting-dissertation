@@ -1,6 +1,5 @@
-const express = require('express');
-const router = express.Router();
-const session = require('express-session');
+const expressSession = require('express-session');
+const socketSession = require('express-socket.io-session');
 const uuid = require('uuid/v4');
 
 const sessionOptions = {
@@ -9,15 +8,23 @@ const sessionOptions = {
   resave: true,
   saveUninitialized: true,
   genid: function () {
-    return 'SESSION-' + uuid();
+    return 'USER-' + uuid();
   },
 }
 
-if (router.get('env') === 'production') {
-  router.set('trust proxy', 1) // trust first proxy
-  sessionOptions.cookie.secure = true // serve secure cookies
+const session = expressSession(sessionOptions);
+
+module.exports = function(app) {
+  if (app.get('env') === 'production') {
+    app.set('trust proxy', 1) // trust first proxy
+    sessionOptions.cookie.secure = true // serve secure cookies
+  }
+
+  app.use(session);
+
+  app.locals.socketSession = socketSession(session, {
+    autoSave: true
+  });
+
+  app.locals.socket.use(app.locals.socketSession);
 }
-
-router.use(session(sessionOptions))
-
-module.exports = router;

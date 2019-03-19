@@ -4,8 +4,8 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import io from 'socket.io-client';
-const socket = io('http://localhost:3001');
-socket.on('connect', function () {
+const socket = io('http://localhost:3001/a4cd28eb-faa8-4429-9c89-78cf07a078b3');
+socket.on('connect', function () { 
   console.log('connection');
 });
 socket.on('event', function (data) { });
