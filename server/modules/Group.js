@@ -46,7 +46,7 @@ class Group {
   // The lead member is at index position 0
   getAllMembers() {
     const array = [...this.otherMembers];
-    array.unshift(this.leadMember);
+    array.unshift(this.leadMember.id);
     console.log(array);
     return array;
   }

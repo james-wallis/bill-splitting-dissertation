@@ -11,7 +11,6 @@ router.get('/login', (req, res) => {
 })
 
 router.get('/auth/redirect', async (req, res) => {
-  // if (!req.query.code) return res.redirect('/');
   try {
     const data = await starling.getAccessToken(req.query.code);
     if (data.token_type === 'Bearer') {
@@ -20,8 +19,9 @@ router.get('/auth/redirect', async (req, res) => {
       tokens.refresh = data.refresh_token;
       tokens.expires = data.expires_in;
       fs.writeJson('./token-store.json', tokens);
+      const userData = await starling.getIdentity(data.access_token);
       const users = req.app.locals.users;
-      users.add(req.session.id, data.access_token);
+      users.add(req.session.id, data.access_token, userData);
     } else {
       throw new Error('Token is not of type Bearer.')
     }
@@ -29,17 +29,29 @@ router.get('/auth/redirect', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.code = 500;
-    res.send('Error getting access token')
+    res.send('Error getting access token or creating user')
   }
 })
 
-router.get('*', async (req, res, next) => {
+// Probably won't be needed once on same host
+// router.get('/auth/status', async (req, res) => {
+//   try {
+//     if (!req.session || !req.session.id) res.status(200).send({ authenticated: false });
+//     const users = req.app.locals.users;
+//     const authenticated = await users.checkExists(req.session.id);
+//     return res.status(200).send({authenticated: authenticated});
+//   } catch (err) {
+//     return res.status(500).send(err);
+//   }
+// })
+
+router.all('*', async (req, res, next) => {
   try {
     const users = req.app.locals.users;
     const authenticated = await users.checkExists(req.session.id);
     // console.log('authenticated', authenticated);
     // console.log(req.session.id);
-    // if (!authenticated) return res.redirect('/login');
+    if (!authenticated) return res.redirect('/login');
     const newTokens = await fs.readJson('./token-store.json', { throws: true });
     const tokens = req.app.locals.tokens;
     if (newTokens) {
@@ -47,10 +59,13 @@ router.get('*', async (req, res, next) => {
       tokens.refresh = newTokens.refresh;
       tokens.expires = newTokens.expires;
     }
-    if (!authenticated) users.add(req.session.id, tokens.access);
+    // if (!authenticated) {
+    //   const userData = await starling.getIdentity(newTokens.access);
+    //   users.add(req.session.id, newTokens.access, userData);
+    // }
     req.accessToken = await users.getStarlingAuthToken(req.session.id);
     // console.log(req.session.id);
-    // console.log(users.users)
+    console.log(users.users)
   }
   catch (err) {
     console.log(err);

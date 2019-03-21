@@ -1,47 +1,33 @@
 import React, { Component } from 'react';
-import axios from 'axios';
-import logo from './logo.svg';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import { withStyles } from '@material-ui/core/styles';
 import './App.css';
+import Router from './pages/router';
+import Navigation from './components/navigation';
+
+const styles = theme => ({
+  '@global': {
+    body: {
+      backgroundColor: theme.palette.common.white,
+    },
+  }
+});
 
 class App extends Component {
   constructor(props) {
     super(props);
-
-    this.state = {
-      username: '',
-      error: null
-    };
-  }
-
-  componentDidMount() {
-
-    axios.get('/api/starling/info')
-      .then(result => this.setState({
-        username: `${result.data.firstName} ${result.data.lastName}`
-      }))
-      .catch(error => this.setState({
-        error
-      }));
+    this.state = {};
   }
 
   render() {
-    const { username } = this.state;
-    let infoDiv = <a className="App-link" href="/starling">Auth Starling</a>;
-    if (username) {
-      infoDiv = <h1>{username}</h1>
-    }
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          {infoDiv}
-        </header>
-      </div>
+      <React.Fragment>
+        <CssBaseline />
+        <Navigation />
+        <Router />
+      </React.Fragment>
     );
   }
 }
 
-export default App;
+export default withStyles(styles)(App);
