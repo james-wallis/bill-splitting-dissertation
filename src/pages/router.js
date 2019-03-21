@@ -4,7 +4,6 @@ import Home from './home.js';
 import Create from './create.js';
 import Join from './join.js';
 import Group from './group.js';
-import StarlingName from '../components/starlingName.js';
 
 class Router extends Component {
   constructor(props) {

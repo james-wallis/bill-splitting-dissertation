@@ -4,6 +4,8 @@ import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
+import { Link } from 'react-router-dom';
+import history from "../components/history";
 
 const styles = theme => ({
   layout: {
@@ -39,10 +41,31 @@ class Group extends Component {
       groupURL: null,
       error: null
     };
+    this.checkUserInGroup();
   }
 
   componentDidUpdate() {
     console.log(this.state);
+  }
+
+  checkUserInGroup = () => {
+    console.log('checkUser');
+    axios.get(`/api/group/`)
+      .then(res => {
+        console.log(res);
+        if (res.status !== 200) throw new Error(res);
+        console.log(res);
+        return res.data;
+      })
+      .then(data => {
+        console.log(data)
+        if (data.inGroup) {
+          this.setState({ groupURL: data.endpoint })
+        }
+      })
+      .catch(error => this.setState({
+        error: error
+      }));
   }
 
   createGroup = () => {
@@ -53,15 +76,16 @@ class Group extends Component {
         return res.data;
       })
       // .then(endpoint => this.setState({ groupURL: endpoint}))
-      .then(endpoint => this.props.history.push(`/group${endpoint}`))
+      .then(endpoint => history.push(`/group${endpoint}`))
       .catch(error => this.setState({
-        error
+        error: error
       }));
   }
 
   render() {
     const { classes } = this.props;
     const error = this.state.error;
+    const existingURL = `/group${this.state.groupURL}`;
     return (
       <main className={classes.layout}>
         <div className={classes.heroContent}>
@@ -73,7 +97,16 @@ class Group extends Component {
           </Typography>
           <Grid container spacing={32} justify="space-evenly" className={classes.container}>
             <Grid item xs className={classes.grid}>
-              <Button onClick={this.createGroup} variant="outlined" >Create</Button>
+              {
+                (this.state.groupURL) 
+                ? (
+                    <Typography variant="subtitle2" align="center" color="textSecondary" component="p">
+                      You are already a member of a group and are unable to join another.
+                      The group is located at endpoint <Link to={existingURL}>{existingURL}</Link>
+                    </Typography>
+                )
+                : <Button onClick={this.createGroup} variant="outlined" >Create</Button>
+              }
               {(error) ? <p>Error creating item -> {error}</p> : null }
             </Grid>
           </Grid>

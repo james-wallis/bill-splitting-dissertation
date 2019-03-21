@@ -1,60 +1,91 @@
 import React, { Component } from 'react';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
+import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
+import TextField from '@material-ui/core/TextField';
+import InputLabel from '@material-ui/core/InputLabel';
+import { withStyles } from '@material-ui/core/styles';
+import JoinDialog from '../components/joinDialog';
+
+const styles = theme => ({
+  layout: {
+    width: 'auto',
+    marginLeft: theme.spacing.unit * 3,
+    marginRight: theme.spacing.unit * 3,
+    [theme.breakpoints.up(900 + theme.spacing.unit * 3 * 2)]: {
+      width: 900,
+      marginLeft: 'auto',
+      marginRight: 'auto',
+    },
+  },
+  heroContent: {
+    maxWidth: 600,
+    margin: '0 auto',
+    padding: `${theme.spacing.unit * 8}px 0 ${theme.spacing.unit * 6}px`,
+  },
+  container: {
+    marginTop: 50
+  },
+  grid: {
+    textAlign: 'center'
+  },
+  link: {
+    textDecoration: 'none'
+  },
+  input: {
+    marginTop: 10
+  }
+});
 
 class Join extends Component {
   constructor(props) {
     super(props);
-    // console.log(props.match.params.id);
-    // this.state = {
-    //   id: props.match.params.id,
-    //   group: {}
-    // }
-    // axios.get(`/api/group/${props.match.params.id}`)
-    //   .then(res => {
-    //     if (res.status !== 200) throw new Error(res);
-    //     return res;
-    //   })
-    //   .then(res => this.setState({ group: res.data }))
-    //   .catch(error => this.setState({
-    //     error
-    //   }));
+    this.state = {
+      value: ''
+    }
+    const params = new URLSearchParams(this.props.location.search);
+    let id = params.get('group');
+    if (id && id !== '') {
+      console.log(id)
+      if (id.startsWith('/')) id = id.substr(1);
+      this.state.value = id;
+    }
   }
 
-  componentDidUpdate() {
-    // const leadMember = this.state.group.leadMember
-    // if (leadMember) {
-    //   console.log(leadMember)
-    // }
-  }
-
-  joinGroup = () => {
-    const id = this.state.id;
-    console.log('id', id);
-    axios.post(`/api/group/${id}`)
-      .then(res => {
-        if (res.status !== 200) throw new Error(res);
-        console.log(res);
-        return res;
-      })
-      .then(res => this.setState(res.data))
-      .catch(error => this.setState({
-        error: error
-      }));
+  handleChange = (event) => {
+    this.setState({ value: event.target.value });
   }
 
   render() {
-    // console.log(this.state)
-    // const group = this.state.group;
-    // const leadMember = group.leadMember
+    const { classes } = this.props;
     return (
-      <div id='group-join'>
-        <h1>Join Group</h1>
-        {/* { (leadMember) ? <p>Split the bill with {leadMember.firstname} {leadMember.lastname}</p> : null} */}
-        {/* <Link to={`/group${group.endpoint}`}>Split it!</Link> */}
-      </div>
+      <main className={classes.layout}>
+        <div className={classes.heroContent}>
+          <Grid container spacing={32} justify="space-evenly">
+            <Typography component="h1" variant="h2" align="center" color="textPrimary" gutterBottom>
+              Join Group
+          </Typography>
+            <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
+              Join an existing bill splitting group. 
+              The group members should provide you with 
+              a unique ID (part of the URL) which you can 
+              enter into the input box below.
+          </Typography>
+          </Grid>
+          <Grid container spacing={32} justify="space-evenly" className={classes.container}>
+            <InputLabel>Group ID</InputLabel>
+            <TextField 
+              className={classes.input} 
+              fullWidth placeholder='Enter Group ID' 
+              value={this.state.value} inputProps={{
+                style: { textAlign: 'center' }
+              }} 
+              onChange={this.handleChange} />
+            <JoinDialog value={this.state.value} />
+          </Grid>
+        </div>
+      </main>
     );
   }
 }
 
-export default Join;
+export default withStyles(styles)(Join);

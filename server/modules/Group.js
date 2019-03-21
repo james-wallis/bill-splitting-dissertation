@@ -55,6 +55,7 @@ class Group {
   addOtherMember(user) {
     if (this.otherMembers.indexOf(user) >= 0) throw new Error('Group.js/addOtherMember: User aleady exists in array');
     this.otherMembers.push(user);
+    this.socket.emit('member-added', this.toString());
     return this.otherMembers;
   }
 
@@ -63,6 +64,7 @@ class Group {
     const index = this.otherMembers.indexOf(user);
     if (index < 0) throw new Error('Group.js/removeOtherMember: User not found in array');
     this.otherMembers.splice(index);
+    this.socket.emit('member-removed', this.toString());
     return this.otherMembers;
   }
 

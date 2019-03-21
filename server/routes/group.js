@@ -4,17 +4,18 @@ const Group = require('../modules/Group.js');
 const Groups = require('../modules/Groups.js');
 const groups = new Groups();
 
-// Dummy
+// Return if user is in a group and the groups endpoint
 router.get('/', async (req, res) => {
   const userID = req.session.id;
-  // Check user isn't already in a different group
   const userInGroup = await groups.isUserInGroup(userID);
-  if (userInGroup) return res.status(500).send('User already exists in group ' + userInGroup.getID())
-  const user = req.app.locals.users.getPublicUser(userID);
-  console.log(user);
-  const group = new Group(user, req.app.locals.socket, req.app.locals.socketSession);
-  res.send(group.getEndpoint())
-  groups.add(group);
+  if (userInGroup) {
+    return res.status(200).json({
+      inGroup: true,
+      endpoint: userInGroup.getEndpoint()
+    }) 
+  } else {
+    return res.status(200).json({ inGroup: false })
+  }
 })
 
 // Create a new group
@@ -37,7 +38,6 @@ router.get('/:id', async (req,res) => {
   try {
     const id = req.params.id;
     const group = groups.getGroupFromEndpoint(id);
-    console.log(group);
     if (group) return res.status(200).send(group.toString());
     return res.status(404).send('group not found --- ' + id)
   } catch (err) {
@@ -53,17 +53,29 @@ router.post('/:id', async (req, res) => {
     const id = req.params.id;
     // Check user isn't already in a different group
     const userInGroup = await groups.isUserInGroup(user);
-    if (userInGroup) return res.status(500).send('User already exists in group ' + userInGroup.getID());
+    if (userInGroup) return res.status(409).json({
+      error: {
+        message: 'user exists in group',
+      },
+      group: userInGroup.toString()
+    });
     const group = groups.getGroupFromEndpoint(id);
     group.addOtherMember(user);
-    const response = {
+    if (group) return res.status(200).json({
       group: group.toString()
-    }
-    if (group) return res.status(200).sendJSON(response);
-    return res.status(404).send('group not found --- ' + id);
+    });
+    return res.status(404).json({
+      error: {
+        message: 'group not found'
+      }
+    });
   } catch (err) {
     console.error(err);
-    return res.status(500).send(err);
+    return res.status(500).json({
+      error: {
+        message: err.message
+      }
+    });
   }
 })
 
