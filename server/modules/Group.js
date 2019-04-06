@@ -18,10 +18,12 @@ class Group {
 
   socketEvents() {
     const io = this.socket;
-    io.on('connection', function (socket) {
+    io.on('connection', (socket) => {
       console.log('nsp someone connected');
       console.log('nsp Socket Session');
       console.log('nsp sessionID', socket.handshake.sessionID);
+      io.emit('group-details', this.toString());
+      io.emit('lead-status', this.isLeadMember(socket.handshake.sessionID));
     });
     io.emit('hi', 'everyone!');
   }
@@ -53,7 +55,10 @@ class Group {
 
   // Add other member to the group
   addOtherMember(user) {
-    if (this.otherMembers.indexOf(user) >= 0) throw new Error('Group.js/addOtherMember: User aleady exists in array');
+    console.log('addOtherMember')
+    console.log(user)
+    if (!user.id || !user.name) throw new Error('Group.js/addOtherMember: User missing ID or Name');
+    if (this.otherMembers.indexOf(user.id) >= 0) throw new Error('Group.js/addOtherMember: User aleady exists in array');
     this.otherMembers.push(user);
     this.socket.emit('member-added', this.toString());
     return this.otherMembers;
@@ -77,6 +82,11 @@ class Group {
       otherMembers: this.otherMembers,
       socketNamespace: (this.socket.name) ? this.socket.name : null
     }
+  }
+
+  isLeadMember(id) {
+    if (id === this.leadMember) return true;
+    return false;
   }
 
   

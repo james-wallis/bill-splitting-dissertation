@@ -49,10 +49,11 @@ router.get('/:id', async (req,res) => {
 // Add a member to a group
 router.post('/:id', async (req, res) => {
   try {
-    const user = req.session.id;
+    const userID = req.session.id;
     const id = req.params.id;
+    const users = req.app.locals.users;
     // Check user isn't already in a different group
-    const userInGroup = await groups.isUserInGroup(user);
+    const userInGroup = await groups.isUserInGroup(userID);
     if (userInGroup) return res.status(409).json({
       error: {
         message: 'user exists in group',
@@ -60,6 +61,8 @@ router.post('/:id', async (req, res) => {
       group: userInGroup.toString()
     });
     const group = groups.getGroupFromEndpoint(id);
+    // fix this
+    const user = users.getPublicUser(userID);
     group.addOtherMember(user);
     if (group) return res.status(200).json({
       group: group.toString()

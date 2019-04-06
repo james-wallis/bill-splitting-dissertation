@@ -28,8 +28,7 @@ class Users {
     const u = this.getUser(uuid);
     return {
       id: uuid,
-      firstname: u.name.first,
-      lastname: u.name.last
+      name: u.name
     }
   }
 
