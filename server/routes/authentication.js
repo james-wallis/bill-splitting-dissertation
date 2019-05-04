@@ -49,9 +49,7 @@ router.all('*', async (req, res, next) => {
   try {
     const users = req.app.locals.users;
     const authenticated = await users.checkExists(req.session.id);
-    // console.log('authenticated', authenticated);
-    // console.log(req.session.id);
-    if (!authenticated) return res.redirect('/login');
+    // if (!authenticated) return res.redirect('/login');
     const newTokens = await fs.readJson('./token-store.json', { throws: true });
     const tokens = req.app.locals.tokens;
     if (newTokens) {
@@ -59,10 +57,10 @@ router.all('*', async (req, res, next) => {
       tokens.refresh = newTokens.refresh;
       tokens.expires = newTokens.expires;
     }
-    // if (!authenticated) {
-    //   const userData = await starling.getIdentity(newTokens.access);
-    //   users.add(req.session.id, newTokens.access, userData);
-    // }
+    if (!authenticated) {
+      const userData = await starling.getIdentity(newTokens.access);
+      users.add(req.session.id, newTokens.access, userData);
+    }
     req.accessToken = await users.getStarlingAuthToken(req.session.id);
     // console.log(req.session.id);
     console.log(users.users)

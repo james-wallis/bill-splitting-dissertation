@@ -7,14 +7,11 @@ const groups = new Groups();
 // Return if user is in a group and the groups endpoint
 router.get('/', async (req, res) => {
   const userID = req.session.id;
-  const userInGroup = await groups.isUserInGroup(userID);
-  if (userInGroup) {
-    return res.status(200).json({
-      inGroup: true,
-      endpoint: userInGroup.getEndpoint()
-    }) 
+  const group = await groups.isUserInGroup(userID);
+  if (group) {
+    return res.status(200).json(group.toString());
   } else {
-    return res.status(200).json({ inGroup: false })
+    return res.status(200).send(null)
   }
 })
 
@@ -26,7 +23,8 @@ router.post('/', async (req, res) => {
   const userInGroup = await groups.isUserInGroup(userID);
   if (userInGroup) return res.status(500).send('User already exists in group ' + userInGroup.getID())
   console.log(req.app.locals.users);
-  const user = req.app.locals.users.getPublicUser(userID);
+  const user = req.app.locals.users.getUser(userID);
+  console.log('user got from req.app')
   console.log(user);
   const group = new Group(user, req.app.locals.socket, req.app.locals.socketSession);
   res.send(group.getEndpoint())
@@ -62,7 +60,8 @@ router.post('/:id', async (req, res) => {
     });
     const group = groups.getGroupFromEndpoint(id);
     // fix this
-    const user = users.getPublicUser(userID);
+    const user = users.getUser(userID);
+    console.log(user)
     group.addOtherMember(user);
     if (group) return res.status(200).json({
       group: group.toString()

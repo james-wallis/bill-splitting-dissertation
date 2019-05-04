@@ -38,7 +38,7 @@ class Group extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      groupURL: null,
+      group: null,
       error: null
     };
     this.checkUserInGroup();
@@ -52,20 +52,20 @@ class Group extends Component {
     console.log('checkUser');
     axios.get(`/api/group/`)
       .then(res => {
-        console.log(res);
         if (res.status !== 200) throw new Error(res);
-        console.log(res);
         return res.data;
       })
       .then(data => {
-        console.log(data)
-        if (data.inGroup) {
-          this.setState({ groupURL: data.endpoint })
-        }
+        if (data) this.setState({ group: data })
       })
-      .catch(error => this.setState({
-        error: error
-      }));
+      .catch(error => {
+        console.log('checkUserInGroup error');
+        console.log(error);
+        console.error(error);
+        this.setState({
+          error: error
+        });
+      })
   }
 
   createGroup = () => {
@@ -73,10 +73,8 @@ class Group extends Component {
       .then(res => {
         if (res.status !== 200) throw new Error(res);
         console.log(res);
-        return res.data;
+        history.push(`/group`);
       })
-      // .then(endpoint => this.setState({ groupURL: endpoint}))
-      .then(endpoint => history.push(`/group${endpoint}`))
       .catch(error => this.setState({
         error: error
       }));
@@ -85,7 +83,7 @@ class Group extends Component {
   render() {
     const { classes } = this.props;
     const error = this.state.error;
-    const existingURL = `/group${this.state.groupURL}`;
+    const existingURL = `/group`;
     return (
       <main className={classes.layout}>
         <div className={classes.heroContent}>
@@ -98,7 +96,7 @@ class Group extends Component {
           <Grid container spacing={32} justify="space-evenly" className={classes.container}>
             <Grid item xs className={classes.grid}>
               {
-                (this.state.groupURL) 
+                (this.state.group) 
                 ? (
                     <Typography variant="subtitle2" align="center" color="textSecondary" component="p">
                       You are already a member of a group and are unable to join another.
