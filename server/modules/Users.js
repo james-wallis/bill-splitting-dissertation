@@ -1,3 +1,5 @@
+const User = require('./User.js');
+
 class Users {
   constructor() {
     this.users = {};
@@ -10,37 +12,35 @@ class Users {
   add(uuid, accessToken, userData) {
     console.log('user added');
     console.log(userData);
-    this.users[uuid] = {
-      id: uuid,
-      private: {
-        starling: {
-          accessToken: accessToken
-        }
-      },
-      name: {
-        first: userData.firstName,
-        last: userData.lastName
-      },
-      payment: {
-        amount: null,
-        tip: null
-      }
-    }
+    this.users[uuid] = new User(uuid, accessToken, userData);
+    // this.users[uuid] = {
+    //   id: uuid,
+    //   private: {
+    //     starling: {
+    //       accessToken: accessToken
+    //     }
+    //   },
+    //   name: {
+    //     first: userData.firstName,
+    //     last: userData.lastName
+    //   },
+    //   payment: {
+    //     amount: null,
+    //     tip: null
+    //   }
+    // }
   }
 
   getUser(uuid) {
-    return this.users[uuid];
+    return this.users[uuid].getUser();
   }
 
   getPublicUser(uuid) {
-    const user = { ...this.getUser(uuid)};
-    // Remove the private key
-    delete user.private;
-    return user;
+    return this.users[uuid].getPublicUser();
   }
 
   getStarlingAuthToken(uuid) {
-    return this.users[uuid].private.starling.accessToken;
+    return this.users[uuid].getStarlingAuth();
   }
 }
 

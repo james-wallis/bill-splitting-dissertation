@@ -61,6 +61,14 @@ class Group {
     return this.otherMembers;
   }
 
+  getOtherMemberById(id) {
+    const array = [...this.otherMembers];
+    for (let i = 0; i < array.length; i++) {
+      const member = array[i];
+      if (member.id === id) return i;
+    } 
+  }
+
   // Returns all members of a group
   // The lead member is at index position 0
   getAllMembers() {
@@ -93,16 +101,10 @@ class Group {
   // Returns new object without the whole socket that can be sent to the client
   // Remove private section from all users so that access tokens don't get send to client
   toString() {
-    const removePrivate = ({...obj}) => {
-      delete obj.private;
-      return obj;
-    }
-    console.log('toString');
-    const lead = removePrivate(this.leadMember);
+    const lead = this.leadMember.getPublicUser();
     const otherMembers = [];
     for (let i = 0; i < this.otherMembers.length; i++) {
-      const obj = this.otherMembers[i];
-      otherMembers.push(removePrivate(obj));
+      otherMembers.push(this.otherMembers[i].getPublicUser());
     }
     return {
       id: this.id,
@@ -134,9 +136,11 @@ class Group {
 
   updateUserAmount(userID, newAmount, newTip) {
     console.log('updateUserAmount', userID, newAmount, newTip);
-    console.log(this.getLeadMember());
-
-    console.log(this.getLeadMember());
+    const user = (this.isLeadMember(userID)) ? this.getLeadMember() : this.getOtherMemberById(userID);
+    user.setPayment({ 
+      amount: newAmount,
+      tip: newTip
+    });
   }
 }
 
