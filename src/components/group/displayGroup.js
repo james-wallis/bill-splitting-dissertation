@@ -7,6 +7,7 @@ import GroupTable from './groupTable';
 import AdminOptions from './adminOptionsTable';
 import AmountAndMethod from './amountAndMethod';
 import UserOptions from './userOptions';
+import Summary from './summary';
 
 const styles = theme => ({
   heroContent: {
@@ -21,7 +22,7 @@ class DisplayGroup extends Component {
     super(props);
     this.state = {
       group: props.group,
-      lead: false,
+      isLead: false,
       error: null
     };
     this.setupSocket();
@@ -53,14 +54,14 @@ class DisplayGroup extends Component {
       // If Admin set state admin to true
       console.log('isLead', isLead);
       this.setState({
-        lead: isLead
+        isLead: isLead
       })
     })
   }
 
   render = () => {
     const { classes } = this.props;
-    const { group, lead } = this.state;
+    const { group, isLead } = this.state;
     const ownership = ((group.leadMember && group.leadMember.name.last.slice(-1) === 's') ? '\'' : '\'s');
     return (
       <div>
@@ -82,12 +83,13 @@ class DisplayGroup extends Component {
         </div>
         <div>
           {/* If user is Admin show the options else just show each users the amount and method used in payment */}
-          {(lead) ? <AdminOptions socket={this.socket} amount={group.amount} method={group.method} /> : <AmountAndMethod amount={group.amount} method={group.method} />}
+          {(isLead) ? <AdminOptions socket={this.socket} amount={group.amount} method={group.method} /> : <AmountAndMethod amount={group.amount} method={group.method} />}
           {/* <Display /> */}
           <Divider />
           <UserOptions totalAmount={group.amount} socket={this.socket} />
           <Divider />
           <GroupTable lead={group.leadMember} members={group.otherMembers} />
+          <Summary totalToPay={group.amount} lead={group.leadMember} members={group.otherMembers} />
         </div>
       </div>
     );

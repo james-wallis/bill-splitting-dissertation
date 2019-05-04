@@ -32,8 +32,9 @@ class Users {
   }
 
   setPayment(paymentObj) {
-    if (paymentObj.amount) this.payment.amount = paymentObj.amount;
-    if (paymentObj.tip) this.payment.tip = paymentObj.tip;
+    console.log('paymentObj', paymentObj);
+    if (paymentObj.amount > 0 && paymentObj.amount !== '') this.payment.amount = paymentObj.amount;
+    if (paymentObj.tip >= 0 && paymentObj.tip !== '') this.payment.tip = paymentObj.tip;
   }
 }
 

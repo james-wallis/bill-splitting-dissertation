@@ -19,13 +19,9 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const userID = req.session.id;
   // Check user isn't already in a different group
-  console.log(userID);
   const userInGroup = await groups.isUserInGroup(userID);
   if (userInGroup) return res.status(500).send('User already exists in group ' + userInGroup.getID())
-  console.log(req.app.locals.users);
   const user = req.app.locals.users.getUser(userID);
-  console.log('user got from req.app')
-  console.log(user);
   const group = new Group(user, req.app.locals.socket, req.app.locals.socketSession);
   res.send(group.getEndpoint())
   groups.add(group);
@@ -61,7 +57,6 @@ router.post('/:id', async (req, res) => {
     const group = groups.getGroupFromEndpoint(id);
     // fix this
     const user = users.getUser(userID);
-    console.log(user)
     group.addOtherMember(user);
     if (group) return res.status(200).json({
       group: group.toString()

@@ -18,9 +18,12 @@ router.get('/auth/redirect', async (req, res) => {
       tokens.access = data.access_token;
       tokens.refresh = data.refresh_token;
       tokens.expires = data.expires_in;
-      fs.writeJson('./token-store.json', tokens);
       const userData = await starling.getIdentity(data.access_token);
       const users = req.app.locals.users;
+      // Testing file save start
+      const userCount = Object.keys(users.users).length;
+      fs.writeJson(`./token-store/${userCount}.json`, tokens);
+      // Testing file save end
       users.add(req.session.id, data.access_token, userData);
     } else {
       throw new Error('Token is not of type Bearer.')
@@ -50,19 +53,34 @@ router.all('*', async (req, res, next) => {
     const users = req.app.locals.users;
     const authenticated = await users.checkExists(req.session.id);
     // if (!authenticated) return res.redirect('/login');
-    const newTokens = await fs.readJson('./token-store.json', { throws: true });
-    const tokens = req.app.locals.tokens;
-    if (newTokens) {
-      tokens.access = newTokens.access;
-      tokens.refresh = newTokens.refresh;
-      tokens.expires = newTokens.expires;
-    }
+    // Testing file save start
     if (!authenticated) {
+      const userCount = Object.keys(users.users).length;
+      console.log('userCount', userCount);
+      let newTokens = null;
+      try {
+        newTokens = await fs.readJson(`./token-store/${userCount}.json`, { throws: true });
+      } catch (err) {
+        return res.redirect('/login');
+      }
+      console.log('newTokens', newTokens);
+      const tokens = req.app.locals.tokens;
+      if (newTokens) {
+        tokens.access = newTokens.access;
+        tokens.refresh = newTokens.refresh;
+        tokens.expires = newTokens.expires;
+      }
       const userData = await starling.getIdentity(newTokens.access);
       users.add(req.session.id, newTokens.access, userData);
     }
+    // Testing file save end
+    // if (!authenticated) {
+    //   const userData = await starling.getIdentity(newTokens.access);
+    //   users.add(req.session.id, newTokens.access, userData);
+    // }
     req.accessToken = await users.getStarlingAuthToken(req.session.id);
     // console.log(req.session.id);
+    console.log('user.users');
     console.log(users.users)
   }
   catch (err) {

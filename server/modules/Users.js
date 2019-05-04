@@ -10,8 +10,6 @@ class Users {
   }
 
   add(uuid, accessToken, userData) {
-    console.log('user added');
-    console.log(userData);
     this.users[uuid] = new User(uuid, accessToken, userData);
     // this.users[uuid] = {
     //   id: uuid,

@@ -17,7 +17,7 @@ class Group {
     this.socket = socket.of(this.endpoint).use(socketSession);
     this.socketEvents();
     this.method = splitMethods[0];
-    this.amount = 0;
+    this.amount = '';
     return this.id;
   }
 
@@ -27,7 +27,7 @@ class Group {
       console.log('nsp someone connected');
       console.log('nsp Socket Session');
       console.log('nsp sessionID', socket.handshake.sessionID);
-      io.emit('lead-status', this.isLeadMember(socket.handshake.sessionID));
+      socket.emit('lead-status', this.isLeadMember(socket.handshake.sessionID));
 
       socket.on('admin-options', (opts) => {
         this.setSplitMethod(opts.method);
@@ -61,12 +61,28 @@ class Group {
     return this.otherMembers;
   }
 
-  getOtherMemberById(id) {
+  getOtherMemberIndex(id) {
     const array = [...this.otherMembers];
+    console.log('getOtherMemberIndex --- array', array);
     for (let i = 0; i < array.length; i++) {
       const member = array[i];
+      console.log('getOtherMemberIndex --- member', member);
+      console.log('getOtherMemberIndex --- if', member.id === id);
       if (member.id === id) return i;
-    } 
+    }
+    return null;
+  }
+
+  getOtherMember(id) {
+    const i = this.getOtherMemberIndex(id);
+    return this.otherMembers[i];
+  }
+
+  checkUserInGroup(id) {
+    if (this.getLeadMember().id === id) return true;
+    const i = this.getOtherMemberIndex(id);
+    console.log('checkUserInGroup, i', i);
+    return (i !== null && i > -1) ? true : false;
   }
 
   // Returns all members of a group
@@ -74,14 +90,11 @@ class Group {
   getAllMembers() {
     const array = [...this.otherMembers];
     array.unshift(this.leadMember.id);
-    console.log(array);
     return array;
   }
 
   // Add other member to the group
   addOtherMember(user) {
-    console.log('addOtherMember')
-    console.log(user)
     if (!user.id || !user.name) throw new Error('Group.js/addOtherMember: User missing ID or Name');
     if (this.otherMembers.indexOf(user.id) >= 0) throw new Error('Group.js/addOtherMember: User aleady exists in array');
     this.otherMembers.push(user);
@@ -135,8 +148,7 @@ class Group {
   }
 
   updateUserAmount(userID, newAmount, newTip) {
-    console.log('updateUserAmount', userID, newAmount, newTip);
-    const user = (this.isLeadMember(userID)) ? this.getLeadMember() : this.getOtherMemberById(userID);
+    const user = (this.isLeadMember(userID)) ? this.getLeadMember() : this.getOtherMember(userID);
     user.setPayment({ 
       amount: newAmount,
       tip: newTip

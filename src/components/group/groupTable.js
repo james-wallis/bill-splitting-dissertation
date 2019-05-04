@@ -23,6 +23,9 @@ class Navigation extends Component {
 
   render() {
     const { classes, lead, members } = this.props;
+    console.log('groupTable.js');
+    console.log(lead);
+    console.log(members);
     return (
       <div>
         <h2>Group details</h2>
@@ -37,16 +40,16 @@ class Navigation extends Component {
           <TableBody>
             <TableRow>
               <TableCell component="th" scope="row">{`${lead.name.first} ${lead.name.last}`}</TableCell>
-              <TableCell align="right">{(lead.amount) ? `£${lead.amount}` : '£0.00'}</TableCell>
-              <TableCell align="right">{(lead.tip) ? `£${lead.tip}` : '£0.00'}</TableCell>
+              <TableCell align="right">{(lead.payment.amount) ? `£${lead.payment.amount}` : '£0.00'}</TableCell>
+              <TableCell align="right">{(lead.payment.tip) ? `£${lead.payment.tip}` : '£0.00'}</TableCell>
             </TableRow>
             {members.map(member => (
               <TableRow key={member.id}>
                 <TableCell component="th" scope="row">
                   {`${member.name.first} ${member.name.last}`}
                 </TableCell>
-                <TableCell align="right">{(member.amount) ? `£${member.amount}` : '£0.00'}</TableCell>
-                <TableCell align="right">{(member.tip) ? `£${member.tip}` : '£0.00'}</TableCell>
+                <TableCell align="right">{(member.payment.amount) ? `£${member.payment.amount}` : '£0.00'}</TableCell>
+                <TableCell align="right">{(member.payment.tip) ? `£${member.payment.tip}` : '£0.00'}</TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -25,7 +25,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dev-server": "nodemon --verbose --ignore src/ --ignore token-store.json server/server.js",
+    "dev-server": "nodemon --verbose --ignore src/ --ignore token-store/ --ignore token-store.json server/server.js",
     "server": "node server/server.js"
   },
   "eslintConfig": {

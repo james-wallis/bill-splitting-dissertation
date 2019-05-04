@@ -46,8 +46,8 @@ class AlertDialogSlide extends React.Component {
     axios.post(`/api/group/${id}`)
       .then(res => {
         if (res.status === 200) {
-          const endpoint = res.data.group.endpoint;
-          history.push(`/group${endpoint}`)
+          console.log(res)
+          history.push(`/group`)
         } else {
           this.setState({
             error: {

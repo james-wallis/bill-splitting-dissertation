@@ -51,7 +51,6 @@ class Starling {
 
   async getIdentity(accessToken) {
     const response = await this.getAPI('/api/v2/identity/individual', accessToken);
-    console.log(response.status);
     return response.data;
   }
 

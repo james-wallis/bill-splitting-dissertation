@@ -34,24 +34,22 @@ class UserOptions extends Component {
   }
 
   handleChange = (name, valid) => event => {
-    // ensure that the amount is valid
-    const regex = /^[1-9]\d*(?:\.\d{0,2})?$/;
-    const val = (event.target.value && parseFloat(event.target.value)) ? parseFloat(event.target.value) : '';
-    let result = true;
-    if (name === 'amount') {
-      const { totalAmount } = this.props;
-      result = (regex.test(val) && val <= totalAmount && val > 0);
-    } else {
-      result = (val > 0)
-    }
+    const regex = /^([1-9]\d*|0)(?:\.\d{0,2})?$/;
+    const prevValue = this.state[name];
+    let newValue = event.target.value;
+    let result = regex.test(newValue) || newValue === '';
+    if (result && newValue !== '' && newValue[newValue.length -1] !== '.') newValue = parseFloat(newValue);
+    console.log('result', result);
+
     this.setState({
-      [name]: val,
+      [name]: ((result) ? newValue : prevValue),
       [valid]: result
     });
   };
   
   updateUser = () => {
     const { amount, tip } = this.state;
+    console.log('amount, tip, ', amount, tip);
     this.props.socket.emit('user-amount', amount, tip);
     this.setState({
       amount: '',
