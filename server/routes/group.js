@@ -55,7 +55,6 @@ router.post('/:id', async (req, res) => {
       group: userInGroup.toString()
     });
     const group = groups.getGroupFromEndpoint(id);
-    // fix this
     const user = users.getUser(userID);
     group.addOtherMember(user);
     if (group) return res.status(200).json({

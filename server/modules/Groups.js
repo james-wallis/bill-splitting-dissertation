@@ -22,15 +22,7 @@ class Groups {
     const array = this.array;
     for (const el in array) {
       const group = array[el];
-      console.log('isUserInGroup, checkUserInGroup', group.checkUserInGroup(userID));
       if (group.checkUserInGroup(userID)) return group;
-      // const members = group.getAllMembers();
-      // console.log('isUserInGroup');
-      // console.log(members);
-      // for (let j = 0; j < members.length; j++) {
-      //   const member = members[j];
-      //   if (member === userID) return group;
-      // }
     }
   }
 

@@ -17,6 +17,10 @@ const styles = theme => ({
   },
   options: {
     textTransform: 'capitalize'
+  },
+  pledged: {
+    // textAlign: '',
+    fontSize: '12px'
   }
 });
 
@@ -60,14 +64,19 @@ class UserOptions extends Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, disabled, currentUserAmounts } = this.props;
     const { amountValid, tipValid } = this.state;
+    const currentUserAmount = (currentUserAmounts && currentUserAmounts.amount) ? currentUserAmounts.amount : 0;
+    const currentUserTip = (currentUserAmounts && currentUserAmounts.tip) ? currentUserAmounts.tip : 0;
+    const currentUserTotal = currentUserAmount + currentUserTip;
+    const currentUserFundsAvailable = (currentUserAmounts && currentUserAmounts.available) ? currentUserAmounts.available : 'N/A';
+    const currentUserCanAfford = (currentUserAmounts && currentUserAmounts.canAffordPayment) ? 'Yes' : 'No';
     return (
       <div className={classes.root}>
         <h2>Your options</h2>
         <p>Enter the amount you are willing to pay and tip.</p>
         <Grid container spacing={24} className={classes.gridContainer}>
-          <Grid item xs={6} sm={4}>
+          <Grid item xs={6} sm={3}>
             <TextField
               error={!amountValid}
               id="amount"
@@ -76,9 +85,10 @@ class UserOptions extends Component {
               margin="normal"
               value={this.state.amount}
               onChange={this.handleChange('amount', 'amountValid')}
+              disabled={disabled}
             />
           </Grid>
-          <Grid item xs={6} sm={4}>
+          <Grid item xs={6} sm={3}>
             <TextField
               error={!tipValid}
               id="tip"
@@ -87,12 +97,33 @@ class UserOptions extends Component {
               margin="normal"
               value={this.state.tip}
               onChange={this.handleChange('tip', 'tipValid')}
+              disabled={disabled}
             />
           </Grid>
-          <Grid item xs={12} sm={4} className={classes.buttonContainer}>
-            <Button variant="contained" disabled={!amountValid} onClick={this.updateUser}>
-              Update
-            </Button>
+          <Grid container item xs={12} sm={6} className={classes.buttonContainer}>
+            <Grid item xs={12} sm={12} className={classes.pledged}>
+              <h3>Your summary</h3>
+            </Grid>
+            <Grid item xs={12} sm={6} className={classes.pledged}>
+              <p className={classes.pledged}>Pledged amount: &pound;{currentUserAmount}</p>
+              <p className={classes.pledged}>Pledged tip: &pound;{currentUserTip}</p>
+              <p className={classes.pledged}>Total: &pound;{currentUserTotal}</p>
+            </Grid>
+            <Grid item xs={12} sm={6} className={classes.pledged}>
+              <p className={classes.pledged}>Amount available in your account: &pound;{currentUserFundsAvailable}</p>
+              <p className={classes.pledged}>Amount available after transaction: &pound;{currentUserFundsAvailable - currentUserTotal}</p>
+              <p className={classes.pledged}>Able to make payment: {currentUserCanAfford}</p>
+            </Grid>
+            <Grid item xs={12} sm={12} className={classes.pledged}>
+              <Button variant="contained" disabled={!amountValid || disabled} onClick={this.updateUser}>
+                Update
+              </Button>
+            </Grid>
+          </Grid>
+          <Grid item xs={12} >
+            {(disabled) 
+            ? <p>To re-enable this section, uncheck the "commit to payment" box at the bottom.</p> 
+            : <p>Once you're happy with the amount you will pay and tip, check the "commit to payment" box at the bottom.</p>}
           </Grid>
         </Grid>
       </div>

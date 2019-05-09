@@ -14,7 +14,8 @@ router.get('/auth/redirect', async (req, res) => {
   try {
     const data = await starling.getAccessToken(req.query.code);
     if (data.token_type === 'Bearer') {
-      const tokens = req.app.locals.tokens;
+      // const tokens = req.app.locals.tokens;
+      const tokens = {};
       tokens.access = data.access_token;
       tokens.refresh = data.refresh_token;
       tokens.expires = data.expires_in;
@@ -64,7 +65,8 @@ router.all('*', async (req, res, next) => {
         return res.redirect('/login');
       }
       console.log('newTokens', newTokens);
-      const tokens = req.app.locals.tokens;
+      // const tokens = req.app.locals.tokens;
+      const tokens = {};
       if (newTokens) {
         tokens.access = newTokens.access;
         tokens.refresh = newTokens.refresh;
@@ -74,17 +76,11 @@ router.all('*', async (req, res, next) => {
       users.add(req.session.id, newTokens.access, userData);
     }
     // Testing file save end
-    // if (!authenticated) {
-    //   const userData = await starling.getIdentity(newTokens.access);
-    //   users.add(req.session.id, newTokens.access, userData);
-    // }
     req.accessToken = await users.getStarlingAuthToken(req.session.id);
-    // console.log(req.session.id);
-    console.log('user.users');
-    console.log(users.users)
   }
   catch (err) {
-    console.log(err);
+    console.log('Authentication.js/*: Error in session middleware checking user is authenticated');
+    console.error(err);
   }
   next();
 })

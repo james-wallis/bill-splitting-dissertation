@@ -35,6 +35,7 @@ class Navigation extends Component {
               <TableCell>Name</TableCell>
               <TableCell align="right">Amount (£)</TableCell>
               <TableCell align="right">Tip</TableCell>
+              <TableCell align="right">Committed to payment</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -42,6 +43,7 @@ class Navigation extends Component {
               <TableCell component="th" scope="row">{`${lead.name.first} ${lead.name.last}`}</TableCell>
               <TableCell align="right">{(lead.payment.amount) ? `£${lead.payment.amount}` : '£0.00'}</TableCell>
               <TableCell align="right">{(lead.payment.tip) ? `£${lead.payment.tip}` : '£0.00'}</TableCell>
+              <TableCell align="right">{(lead.payment.status) ? `Yes` : 'No'}</TableCell>
             </TableRow>
             {members.map(member => (
               <TableRow key={member.id}>
@@ -50,6 +52,7 @@ class Navigation extends Component {
                 </TableCell>
                 <TableCell align="right">{(member.payment.amount) ? `£${member.payment.amount}` : '£0.00'}</TableCell>
                 <TableCell align="right">{(member.payment.tip) ? `£${member.payment.tip}` : '£0.00'}</TableCell>
+                <TableCell align="right">{(member.payment.status) ? `Yes` : 'No'}</TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -8,6 +8,8 @@ import AdminOptions from './adminOptionsTable';
 import AmountAndMethod from './amountAndMethod';
 import UserOptions from './userOptions';
 import Summary from './summary';
+import MakePayment from './adminMakePayment';
+import PaymentBeingProccessed from './paymentBeingProcessed';
 
 const styles = theme => ({
   heroContent: {
@@ -22,8 +24,13 @@ class DisplayGroup extends Component {
     super(props);
     this.state = {
       group: props.group,
+      user: {
+        payment: null
+      },
       isLead: false,
-      error: null
+      error: null,
+      disableYourOptions: false,
+      paymentStatus: null
     };
     this.setupSocket();
   }
@@ -47,21 +54,40 @@ class DisplayGroup extends Component {
       this.setState({
         group: data
       })
-      console.log(data);
-      console.log(this.state.group)
     })
-    socket.on('lead-status', (isLead) => {
+    socket.on('user-details', data => {
+      console.log('user-details');
+      console.log(data);
+      this.setState({
+        user: data
+      })
+    })
+    socket.on('lead-status', isLead => {
       // If Admin set state admin to true
       console.log('isLead', isLead);
       this.setState({
         isLead: isLead
       })
     })
+    socket.on('payment-status', (status, error) => {
+      console.log('payment-status received', status);
+      if (error) console.error(error);
+      this.setState({
+        paymentStatus: status
+      })
+    })
+  }
+
+  toggleYourOptions = (toggle) => {
+    console.log('toggle', toggle);
+    this.setState({
+      disableYourOptions: toggle
+    })
   }
 
   render = () => {
     const { classes } = this.props;
-    const { group, isLead } = this.state;
+    const { group, isLead, disableYourOptions, user } = this.state;
     const ownership = ((group.leadMember && group.leadMember.name.last.slice(-1) === 's') ? '\'' : '\'s');
     return (
       <div>
@@ -81,16 +107,23 @@ class DisplayGroup extends Component {
             {(group.endpoint) ? ` ${window.location.origin}/join?group=${group.endpoint}` : ' '}
           </Typography>
         </div>
-        <div>
-          {/* If user is Admin show the options else just show each users the amount and method used in payment */}
-          {(isLead) ? <AdminOptions socket={this.socket} amount={group.amount} method={group.method} /> : <AmountAndMethod amount={group.amount} method={group.method} />}
-          {/* <Display /> */}
-          <Divider />
-          <UserOptions totalAmount={group.amount} socket={this.socket} />
-          <Divider />
-          <GroupTable lead={group.leadMember} members={group.otherMembers} />
-          <Summary totalToPay={group.amount} lead={group.leadMember} members={group.otherMembers} />
-        </div>
+        {(this.state.paymentStatus)
+        ? 
+          <PaymentBeingProccessed status={this.state.paymentStatus}/>
+        :
+          <div>
+            {/* If user is Admin show the options else just show each users the amount and method used in payment */}
+            {(isLead) ? <AdminOptions socket={this.socket} amount={group.amount} method={group.method} /> : <AmountAndMethod amount={group.amount} method={group.method} />}
+            {/* <Display /> */}
+            <Divider />
+            <UserOptions disabled={disableYourOptions} totalAmount={group.amount} currentUserAmounts={user.payment} socket={this.socket} />
+            <Divider />
+            <Summary togglePayment={this.toggleYourOptions} socket={this.socket} totalToPay={group.amount} lead={group.leadMember} members={group.otherMembers} />
+            <GroupTable lead={group.leadMember} members={group.otherMembers} />
+            {(isLead) ? <MakePayment socket={this.socket} groupID={group.id} /> : null}
+          </div>
+        }
+        
       </div>
     );
   }

@@ -11,22 +11,6 @@ class Users {
 
   add(uuid, accessToken, userData) {
     this.users[uuid] = new User(uuid, accessToken, userData);
-    // this.users[uuid] = {
-    //   id: uuid,
-    //   private: {
-    //     starling: {
-    //       accessToken: accessToken
-    //     }
-    //   },
-    //   name: {
-    //     first: userData.firstName,
-    //     last: userData.lastName
-    //   },
-    //   payment: {
-    //     amount: null,
-    //     tip: null
-    //   }
-    // }
   }
 
   getUser(uuid) {

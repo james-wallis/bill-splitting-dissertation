@@ -18,7 +18,6 @@ class Router extends Component {
         <Route path="/join" component={Join} />
         <Route path="/create" component={Create} />
         <Route path="/group" component={Group} />
-        <Route path="/group/:id" component={Group} />
         <Route render={() => <Redirect to="/join" />} />
       </Switch>
     );

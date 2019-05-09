@@ -8,7 +8,7 @@ import NativeSelect from '@material-ui/core/NativeSelect';
 import Input from '@material-ui/core/Input';
 import FormControl from '@material-ui/core/FormControl';
 
-const splitMethods = ['EVEN', 'CUSTOM']
+const splitMethods = ['CUSTOM', 'EVEN']
 
 const styles = theme => ({
   root: {
