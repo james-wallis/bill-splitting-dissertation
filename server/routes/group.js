@@ -64,15 +64,15 @@ router.post('/:id', async (req, res) => {
       group: userInGroup.toString()
     });
     const group = groups.getGroupFromEndpoint(id);
+    if (!group) return res.status(404).json({
+      error: {
+        message: 'group not found',
+      }
+    });
     const user = users.getUser(userID);
     group.addOtherMember(user);
-    if (group) return res.status(200).json({
+    return res.status(200).json({
       group: group.toString()
-    });
-    return res.status(404).json({
-      error: {
-        message: 'group not found'
-      }
     });
   } catch (err) {
     console.error(err);

@@ -9,6 +9,7 @@ import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import axios from 'axios';
 import history from "./history";
+import { Link } from 'react-router-dom';
 
 const styles = theme => ({
   button: {
@@ -45,6 +46,7 @@ class AlertDialogSlide extends React.Component {
     console.log(this.props);
     axios.post(`/api/group/${id}`)
       .then(res => {
+        console.log(res);
         if (res.status === 200) {
           console.log(res)
           history.push(`/group`)
@@ -64,10 +66,11 @@ class AlertDialogSlide extends React.Component {
   };
 
   render() {
-    const { classes } = this.props;
+    const { classes, value } = this.props;
+    const errorCode = (this.state.error && this.state.error.response && this.state.error.response.status) ? this.state.error.response.status : null;
     return (
       <div>
-        <Button className={classes.button} variant="outlined" color="primary" onClick={this.handleClickOpen}>
+        <Button disabled={(!value || value === '')} className={classes.button} variant="outlined" color="primary" onClick={this.handleClickOpen}>
           Join Group
         </Button>
         <Dialog
@@ -89,16 +92,51 @@ class AlertDialogSlide extends React.Component {
             {
             (this.state.loading) ?
                   <div className={classes.loading}>
+                  {(errorCode || this.state.error.message)
+                    ?
+                    <div>
+                      {(errorCode === 404 || errorCode === 409)
+                      ?
+                      <div>
+                        <DialogTitle id="alert-dialog-slide-title">
+                            {(errorCode === 404) ? 'Group not found' : 'You are already a member of a group'}
+                        </DialogTitle>
+                        {
+                            (errorCode === 404) 
+                          ? 
+                          <div>
+                            <DialogContentText id="alert-dialog-description">
+                              Close this dialog box and check the Group ID.
+                            </DialogContentText>
+                            <Button variant="outlined" onClick={this.handleClose} color="primary">
+                              Close
+                            </Button>
+                          </div>
+                          :
+                          <Link to='/group'>
+                            Group page
+                          </Link>
+                        }
+                        
+                      </div>
+                      :
+                      <div>
+                        <DialogTitle id="alert-dialog-slide-title">
+                          Error joining group
+                        </DialogTitle>
+                        <DialogContentText id="alert-dialog-description">
+                            {(errorCode) ? `Code: ${errorCode}` : null}
+                        </DialogContentText>
+                        <DialogContentText id="alert-dialog-description">
+                          {(this.state.error.message) ? `Message: ${this.state.error.message}` : null}
+                        </DialogContentText>
+                      </div>
+                      }
+                    </div>
+                    :
                     <CircularProgress />
-                    <DialogTitle id="alert-dialog-slide-title">
-                      {(this.state.error.code || this.state.error.message) ? 'Error joining group' : ''}
-                    </DialogTitle>
-                    <DialogContentText id="alert-dialog-description">
-                      {(this.state.error.code) ? `Code: ${this.state.error.code}` : null}
-                    </DialogContentText>
-                    <DialogContentText id="alert-dialog-description">
-                      {(this.state.error.message) ? `Message: ${this.state.error.message}` : null}
-                    </DialogContentText>
+                    }
+                    
                   </div>
             : <DialogActions>
                 <Button onClick={this.handleClose} color="primary">

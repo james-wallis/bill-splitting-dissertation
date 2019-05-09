@@ -40,7 +40,7 @@ router.all('*', async (req, res, next) => {
   try {
     const users = req.app.locals.users;
     const authenticated = await users.checkExists(req.session.id);
-    if (!authenticated) return res.redirect('/login');
+    // if (!authenticated) return res.redirect('/login');
     // Testing file save start
     if (!authenticated) {
       const userCount = Object.keys(users.users).length;

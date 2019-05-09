@@ -1,6 +1,10 @@
 const Starling = require('./Starling.js');
 const starling = new Starling();
 
+/**
+ * Class User
+ * The User object which holds information in each individual user
+ */
 class User {
   constructor(uuid, accessToken, userData) {
     this.id = uuid // User ID
