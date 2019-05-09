@@ -1,6 +1,16 @@
 const crypto = require('crypto');
 const fs = require('fs-extra')
 
+/**
+ * Function which returns a signed request header as per the Starling guidelines
+ * Doesn't work for unknown reasons and won't run currently as private key has been removed from directory
+ * This is the function that should be enhanced to enable Starling payment
+ * @param method - The HTTP method being used
+ * @param url - the URL used in the request
+ * @param payload - the data being sent to the Starling API
+ * @param accessToken - the access token for the user
+ * @returns headers - The headers object as per the Starling documentation guidelines
+ */
 const createSignedRequestHeaders = async (method, url, payload, accessToken) => {
   if (!method) throw new Error('createSignedRequestHeaders.js: method not given.');
   if (!url) throw new Error('createSignedRequestHeaders.js: url not given.');

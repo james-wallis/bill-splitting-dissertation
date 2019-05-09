@@ -14,7 +14,6 @@ router.get('/auth/redirect', async (req, res) => {
   try {
     const data = await starling.getAccessToken(req.query.code);
     if (data.token_type === 'Bearer') {
-      // const tokens = req.app.locals.tokens;
       const tokens = {};
       tokens.access = data.access_token;
       tokens.refresh = data.refresh_token;
@@ -37,23 +36,11 @@ router.get('/auth/redirect', async (req, res) => {
   }
 })
 
-// Probably won't be needed once on same host
-// router.get('/auth/status', async (req, res) => {
-//   try {
-//     if (!req.session || !req.session.id) res.status(200).send({ authenticated: false });
-//     const users = req.app.locals.users;
-//     const authenticated = await users.checkExists(req.session.id);
-//     return res.status(200).send({authenticated: authenticated});
-//   } catch (err) {
-//     return res.status(500).send(err);
-//   }
-// })
-
 router.all('*', async (req, res, next) => {
   try {
     const users = req.app.locals.users;
     const authenticated = await users.checkExists(req.session.id);
-    // if (!authenticated) return res.redirect('/login');
+    if (!authenticated) return res.redirect('/login');
     // Testing file save start
     if (!authenticated) {
       const userCount = Object.keys(users.users).length;
@@ -65,7 +52,6 @@ router.all('*', async (req, res, next) => {
         return res.redirect('/login');
       }
       console.log('newTokens', newTokens);
-      // const tokens = req.app.locals.tokens;
       const tokens = {};
       if (newTokens) {
         tokens.access = newTokens.access;
@@ -83,6 +69,12 @@ router.all('*', async (req, res, next) => {
     console.error(err);
   }
   next();
+})
+
+router.post('/api/auth/logout', (req, res) => {
+  const users = req.app.locals.users;
+  users.delete(req.session.id);
+  res.status(200).send('Logout successful');
 })
 
 module.exports = router;

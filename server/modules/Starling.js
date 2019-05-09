@@ -4,8 +4,13 @@ const uuid = require('uuid/v4');
 const createSignedRequestHeaders = require('../utils/createSignedRequestHeaders');
 const timeout = require('../utils/timeout');
 
-const StarlingState = 'somerandomstring';
+const StarlingState = uuid();
 
+/**
+ * Class Starling
+ * Holds functions to Get and Set information about a given 
+ * user's Starling Bank account using their Access Token
+ */
 class Starling {
   constructor() {
     this.ClientID = process.env.STARLING_CLIENT_ID;
@@ -15,14 +20,28 @@ class Starling {
     this.redirectEndpoint = 'auth/redirect';
   }
 
+  /**
+   * Function setRedirectUrl
+   * Sets the redirect URL for the Starling OAuth
+   * @param protocol - the protocol being used (HTTP or HTTPS)
+   * @param domain - the domain name used in the application
+   */
   setRedirectUrl(protocol, domain) {
     this.redirectUrl = `${protocol}://${domain}/${this.redirectEndpoint}`;
   }
 
+  /**
+   * Function getRedirectUrl
+   * @returns the redirect URL
+   */
   getRedirectUrl() {
     return this.redirectUrl;
   }
 
+  /**
+   * Function getOAuthUrl
+   * @returns the OAuth URL which the User is taken to for Starling OAuth
+   */
   getOAuthUrl() {
     const query = querystring.stringify({
       client_id: this.ClientID,
@@ -33,6 +52,12 @@ class Starling {
     return `${this.OAuthUrl}/?${query}`;
   }
 
+  /**
+   * Function getAccessToken
+   * Exchanges a code for an access token
+   * @param code
+   * @returns the data from the request (access token, refresh token, expiry time)
+   */
   async getAccessToken(code) {
     const url = `${this.ApiUrl}/oauth/access-token`
     const response = await axios.post(url,
@@ -46,6 +71,13 @@ class Starling {
     return response.data;
   }
 
+  /**
+   * Function getAPI
+   * A wrapper to perform a simple Get Request to the Starling API
+   * @param endpoint - the API endpoint
+   * @param accessToken - the accessToken to use for the request
+   * @param query - Optional query params added to the URL
+   */
   async getAPI(endpoint, accessToken, query = null) {
     if (!endpoint) throw new Error('Starling.js/getAPI: Endpoint not supplied.');
     if (!accessToken) throw new Error('Starling.js/getAPI: Access Token not supplied.');
@@ -55,16 +87,23 @@ class Starling {
     return await axios.get(url, options);
   }
 
+  /**
+   * Function getIdentity
+   * Get information about the owner of the accessToken
+   * @param accessToken
+   * @returns the data from the request
+   */
   async getIdentity(accessToken) {
     const response = await this.getAPI('/api/v2/identity/individual', accessToken);
     return response.data;
   }
 
-  // async getToken(accessToken) {
-  //   const response = await this.getAPI('/api/v2/identity/token', accessToken);
-  //   return response.data;
-  // }
-
+  /**
+   * Function getAccounts
+   * Get the accounts for the owner of the access token
+   * @param accessToken
+   * @returns the data from the request
+   */
   async getAccounts(accessToken) {
     const accountsResponse = await this.getAPI('/api/v2/accounts', accessToken);
     if (!accountsResponse.data.accounts) throw new Error('Accounts not received.');
@@ -82,12 +121,25 @@ class Starling {
     return list;
   }
 
+  /**
+   * Function getBalance
+   * Get the balance for the owner of the access token
+   * @param accessToken
+   * @returns the data from the request
+   */
   async getBalance(accessToken, accountID = null) {
     if(!accountID) throw new Error('Starling.js/getBalance: Account not given.');
     const response = await this.getAPI(`/api/v2/accounts/${accountID}/balance`, accessToken);
     return response.data;
   }
 
+  /**
+   * Function getAvailableFunds
+   * Gets the available funds from the user's account
+   * @param accessToken
+   * @param accountID
+   * @returns The total amount of money in the user's account that they can spend
+   */
   async getAvailableFunds(accessToken, accountID = null) {
     if (!accountID) throw new Error('Starling.js/getAvailableFunds: Account not given.');
     const balance = await this.getBalance(accessToken, accountID);
@@ -95,6 +147,15 @@ class Starling {
     return balance.availableToSpend.minorUnits / 100;
   }
 
+  /**
+   * Function getTransactions
+   * Get all the transactions for a users from a given date/time
+   * @param accountID - The account to get the transactions for
+   * @param categoryID - The category to use
+   * @param date - The date to get the transactions from
+   * @param accessToken - The user's access token
+   * @returns the data from the request
+   */
   async getTransactions(accountID, categoryID, date, accessToken) {
     if (!accountID) throw new Error('Starling.js/findTransaction: Account not given.');
     if (!categoryID) throw new Error('Starling.js/findTransaction: categoryID not given.');

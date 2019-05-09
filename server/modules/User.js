@@ -134,6 +134,16 @@ class User {
       this._private.starling.accessToken);
     return transactions;
   }
+
+  resetUserPayment() {
+    this.payment = {
+      amount: 0,
+      tip: 0,
+      status: false,
+      available: 0,
+      canAffordPayment: false
+    }
+  }
 }
 
 // A function to convert a String into the form X.X where the second X is at most two characters 

@@ -30,7 +30,8 @@ class DisplayGroup extends Component {
       isLead: false,
       error: null,
       disableYourOptions: false,
-      paymentStatus: null
+      paymentStatus: null,
+      group_closed: false
     };
     this.setupSocket();
   }
@@ -76,6 +77,9 @@ class DisplayGroup extends Component {
         paymentStatus: status
       })
     })
+    socket.on('group-closed', () => {
+      this.setState({ group_closed: true });
+    })
   }
 
   toggleYourOptions = (toggle) => {
@@ -87,44 +91,59 @@ class DisplayGroup extends Component {
 
   render = () => {
     const { classes } = this.props;
-    const { group, isLead, disableYourOptions, user } = this.state;
+    const { group, isLead, disableYourOptions, user, group_closed, paymentStatus } = this.state;
     const ownership = ((group.leadMember && group.leadMember.name.last.slice(-1) === 's') ? '\'' : '\'s');
     return (
       <div>
-        <div className={classes.heroContent}>
-          <Typography component="h1" variant="h2" align="center" color="textPrimary" gutterBottom>
-            {(group.leadMember) ? `${group.leadMember.name.first} ${group.leadMember.name.last}${ownership} Group` : 'Welcome'}
-          </Typography>
-          <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
-            You have successfully joined
-            {(group.leadMember) ? ` ${group.leadMember.name.first} ${group.leadMember.name.last}${ownership} split the bill group. ` : ' the split the bill group. '}
-            You can now adjust the amount that you owe, add a tip and invite other members of group.
-          </Typography>
-          <Typography className={classes.invite} variant="body1" align="center" color="textSecondary" component="p">
-            Invite other members using the link:
-          </Typography>
-          <Typography variant="body2" align="center" color="textSecondary" component="p">
-            {(group.endpoint) ? ` ${window.location.origin}/join?group=${group.endpoint}` : ' '}
-          </Typography>
-        </div>
-        {(this.state.paymentStatus)
-        ? 
-          <PaymentBeingProccessed status={this.state.paymentStatus}/>
-        :
-          <div>
-            {/* If user is Admin show the options else just show each users the amount and method used in payment */}
-            {(isLead) ? <AdminOptions socket={this.socket} amount={group.amount} method={group.method} /> : <AmountAndMethod amount={group.amount} method={group.method} />}
-            {/* <Display /> */}
-            <Divider />
-            <UserOptions disabled={disableYourOptions} totalAmount={group.amount} currentUserAmounts={user.payment} socket={this.socket} />
-            <Divider />
-            <Summary togglePayment={this.toggleYourOptions} socket={this.socket} totalToPay={group.amount} lead={group.leadMember} members={group.otherMembers} />
-            <GroupTable lead={group.leadMember} members={group.otherMembers} />
-            {(isLead) ? <MakePayment socket={this.socket} groupID={group.id} /> : null}
+        {
+          (group_closed && !paymentStatus) 
+          ?
+          <div className={classes.heroContent}>
+              <Typography component="h1" variant="h2" align="center" color="textPrimary" gutterBottom>
+                The group has been closed.
+              </Typography>
+              <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
+                Speak to the lead member to discuss why and use the create button to create a new one.
+              </Typography>
           </div>
-        }
+          :
+          <div>
+            <div className={classes.heroContent}>
+              <Typography component="h1" variant="h2" align="center" color="textPrimary" gutterBottom>
+                {(group.leadMember) ? `${group.leadMember.name.first} ${group.leadMember.name.last}${ownership} Group` : 'Welcome'}
+              </Typography>
+              <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
+                You have successfully joined
+                {(group.leadMember) ? ` ${group.leadMember.name.first} ${group.leadMember.name.last}${ownership} split the bill group. ` : ' the split the bill group. '}
+                      You can now adjust the amount that you owe, add a tip and invite other members of group.
+              </Typography>
+                    <Typography className={classes.invite} variant="body1" align="center" color="textSecondary" component="p">
+                      Invite other members using the link:
+              </Typography>
+                <Typography variant="body2" align="center" color="textSecondary" component="p">
+                  {(group.endpoint) ? ` ${window.location.origin}/join?group=${group.endpoint}` : ' '}
+                </Typography>
+              </div>
+              {(this.state.paymentStatus)
+                ?
+                <PaymentBeingProccessed socket={this.socket} status={this.state.paymentStatus} />
+                :
+                <div>
+                  {/* If user is Admin show the options else just show each users the amount and method used in payment */}
+                  {(isLead) ? <AdminOptions socket={this.socket} amount={group.amount} method={group.method} /> : <AmountAndMethod amount={group.amount} method={group.method} />}
+                  {/* <Display /> */}
+                  <Divider />
+                  <UserOptions disabled={disableYourOptions} totalAmount={group.amount} currentUserAmounts={user.payment} socket={this.socket} />
+                  <Divider />
+                  <Summary togglePayment={this.toggleYourOptions} socket={this.socket} totalToPay={group.amount} lead={group.leadMember} members={group.otherMembers} />
+                  <GroupTable lead={group.leadMember} members={group.otherMembers} />
+                  {(isLead) ? <MakePayment socket={this.socket} groupID={group.id} /> : null}
+                </div>
+              }
+
+            </div>}
+          </div>
         
-      </div>
     );
   }
 }

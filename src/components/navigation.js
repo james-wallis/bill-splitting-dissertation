@@ -58,6 +58,9 @@ class Navigation extends Component {
               Join
           </Button>
           </Link>
+          <Link to="/logout" className={classes.link}>
+            <Button className={classes.button}>Logout</Button>
+          </Link>
         </Toolbar>
       </AppBar>
     );

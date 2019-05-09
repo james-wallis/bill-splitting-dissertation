@@ -5,8 +5,12 @@ const timeout = require('../utils/timeout');
 // Types for the ways the customer can split the bill.
 const splitMethods = ['CUSTOM', 'EVEN']
 
+/**
+ * Class Group
+ * The Group object which holds the amount owed, users in a group etc
+ */
 class Group {
-  constructor(lead, socket, socketSession) {
+  constructor(lead, socket, socketSession, deleteGroup) {
     if (!lead) throw new Error('Group.js/constructor: New group must contain a lead member')
     if (!socket) throw new Error('Group.js/constructor: New group must pass in socket')
     if (!socketSession) throw new Error('Group.js/constructor: New group must pass in session function for socket')
@@ -23,6 +27,7 @@ class Group {
       accountNumber: '46078856', // the merchant is set to another member of the Starling sandbox.
       sortCode: '608371',
     }
+    this.deleteGroup = deleteGroup;
     return this.id;
   }
 
@@ -126,7 +131,7 @@ class Group {
     const index = this.otherMembers.indexOf(user);
     if (index < 0) throw new Error('Group.js/removeOtherMember: User not found in array');
     this.otherMembers.splice(index);
-    this.socket.emit('member-removed', this.toString());
+    this.socket.emit('group-details', this.toString());
     return this.otherMembers;
   }
 
@@ -215,11 +220,28 @@ class Group {
       this.socket.emit('payment-status', 'lead-money-received');
       await lead.makePaymentToMerchant(this.merchant, this.amount);
       this.socket.emit('payment-status', 'merchant-money-sent');
+      // Now that the payment has been successfully completed, the group should be closed.
+      this.closeGroup();
     } catch(err) {
       console.log('Error Group.js/initiatePayment');
       console.error(err);
       this.socket.emit('payment-status', 'error', err);
     }
+  }
+
+  closeGroup() {
+    // Reset all user's amounts
+    const leadUser = this.getLeadMember();
+    leadUser.resetUserPayment();
+    const array = this.getOtherMembers();
+    for (let i = 0; i < array.length; i++) {
+      const user = array[i];
+      user.resetUserPayment();
+    }
+    const io = this.socket;
+    io.emit('group-closed');
+    io.removeAllListeners();
+    this.deleteGroup(this.id);
   }
 }
 
