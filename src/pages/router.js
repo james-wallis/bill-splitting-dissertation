@@ -4,6 +4,7 @@ import Home from './home.js';
 import Create from './create.js';
 import Join from './join.js';
 import Group from './group.js';
+import Logout from './logout.js';
 
 class Router extends Component {
   constructor(props) {
@@ -17,7 +18,8 @@ class Router extends Component {
         <Route exact path="/" component={Home} />
         <Route path="/join" component={Join} />
         <Route path="/create" component={Create} />
-        <Route path="/group/:id" component={Group} />
+        <Route path="/group" component={Group} />
+        <Route path="/logout" component={Logout} />
         <Route render={() => <Redirect to="/join" />} />
       </Switch>
     );

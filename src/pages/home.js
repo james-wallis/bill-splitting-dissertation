@@ -34,7 +34,6 @@ const styles = theme => ({
 
 function Home(props) {
   const { classes } = props;
-
   return (
     <main className={classes.layout}>
       <div className={classes.heroContent}>

@@ -14,13 +14,19 @@ router.get('/auth/redirect', async (req, res) => {
   try {
     const data = await starling.getAccessToken(req.query.code);
     if (data.token_type === 'Bearer') {
-      const tokens = req.app.locals.tokens;
+      const tokens = {};
       tokens.access = data.access_token;
       tokens.refresh = data.refresh_token;
       tokens.expires = data.expires_in;
-      fs.writeJson('./token-store.json', tokens);
       const userData = await starling.getIdentity(data.access_token);
       const users = req.app.locals.users;
+      if (!process.env.NODE_ENV || process.env.NODE_ENV !== 'prod') {
+        // If not production safe the access tokens to file for later use
+        // Testing file save start
+        const userCount = Object.keys(users.users).length;
+        fs.writeJson(`./token-store/${userCount}.json`, tokens);
+        // Testing file save end
+      }
       users.add(req.session.id, data.access_token, userData);
     } else {
       throw new Error('Token is not of type Bearer.')
@@ -33,44 +39,45 @@ router.get('/auth/redirect', async (req, res) => {
   }
 })
 
-// Probably won't be needed once on same host
-// router.get('/auth/status', async (req, res) => {
-//   try {
-//     if (!req.session || !req.session.id) res.status(200).send({ authenticated: false });
-//     const users = req.app.locals.users;
-//     const authenticated = await users.checkExists(req.session.id);
-//     return res.status(200).send({authenticated: authenticated});
-//   } catch (err) {
-//     return res.status(500).send(err);
-//   }
-// })
-
 router.all('*', async (req, res, next) => {
   try {
     const users = req.app.locals.users;
     const authenticated = await users.checkExists(req.session.id);
-    // console.log('authenticated', authenticated);
-    // console.log(req.session.id);
-    if (!authenticated) return res.redirect('/login');
-    const newTokens = await fs.readJson('./token-store.json', { throws: true });
-    const tokens = req.app.locals.tokens;
-    if (newTokens) {
-      tokens.access = newTokens.access;
-      tokens.refresh = newTokens.refresh;
-      tokens.expires = newTokens.expires;
+    if (!authenticated) {
+      if (process.env.NODE_ENV && process.env.NODE_ENV === 'prod') return res.redirect('/login');
+      // If not production then use the access token from development file.
+      // Testing file save start
+      const userCount = Object.keys(users.users).length;
+      let newTokens = null;
+      try {
+        newTokens = await fs.readJson(`./token-store/${userCount}.json`, { throws: true });
+      } catch (err) {
+        return res.redirect('/login');
+      }
+      console.log('newTokens', newTokens);
+      const tokens = {};
+      if (newTokens) {
+        tokens.access = newTokens.access;
+        tokens.refresh = newTokens.refresh;
+        tokens.expires = newTokens.expires;
+      }
+      const userData = await starling.getIdentity(newTokens.access);
+      users.add(req.session.id, newTokens.access, userData);
+    // Testing file save end
     }
-    // if (!authenticated) {
-    //   const userData = await starling.getIdentity(newTokens.access);
-    //   users.add(req.session.id, newTokens.access, userData);
-    // }
     req.accessToken = await users.getStarlingAuthToken(req.session.id);
-    // console.log(req.session.id);
-    console.log(users.users)
   }
   catch (err) {
-    console.log(err);
+    console.log('Authentication.js/*: Error in session middleware checking user is authenticated');
+    console.error(err);
   }
   next();
+})
+
+router.post('/api/auth/logout', (req, res) => {
+  const users = req.app.locals.users;
+  users.delete(req.session.id);
+  res.status(200).send('Logout successful');
 })
 
 module.exports = router;

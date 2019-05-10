@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@material-ui/core": "^3.9.2",
+    "@material-ui/icons": "^3.0.2",
     "axios": "^0.18.0",
     "dotenv": "^7.0.0",
     "express": "^4.16.4",
@@ -25,8 +26,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dev-server": "nodemon --verbose --ignore src/ --ignore token-store.json server/server.js",
-    "server": "node server/server.js"
+    "dev-server": "nodemon --verbose --ignore src/ --ignore token-store/ --ignore token-store.json server/server.js",
+    "server": "node server/server.js",
+    "production": "NODE_ENV=prod node server/server.js"
   },
   "eslintConfig": {
     "extends": "react-app"

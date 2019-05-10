@@ -4,8 +4,6 @@ import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
-import { Link } from 'react-router-dom';
-import history from "../components/history";
 
 const styles = theme => ({
   layout: {
@@ -34,46 +32,37 @@ const styles = theme => ({
   }
 });
 
-class Group extends Component {
+class Logout extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      group: null,
+      groupLeft: false,
+      loggedOut: false,
       error: null
     };
-    this.checkUserInGroup();
   }
 
-  componentDidUpdate() {
-    console.log(this.state);
-  }
-
-  checkUserInGroup = () => {
-    console.log('checkUser');
-    axios.get(`/api/group/`)
+  leaveGroup = () => {
+    axios.delete(`/api/group`)
       .then(res => {
         if (res.status !== 200) throw new Error(res);
-        return res.data;
-      })
-      .then(data => {
-        if (data) this.setState({ group: data })
-      })
-      .catch(error => {
-        console.log('checkUserInGroup error');
-        console.log(error);
-        console.error(error);
         this.setState({
-          error: error
-        });
+          groupLeft: true
+        })
+        this.logout();
       })
+      .catch(error => this.setState({
+        error: error
+      }));
   }
 
-  createGroup = () => {
-    axios.post(`/api/group/`)
+  logout = () => {
+    axios.post(`/api/auth/logout`)
       .then(res => {
         if (res.status !== 200) throw new Error(res);
-        console.log(res);
-        history.push(`/group`);
+        this.setState({
+          loggedOut: true
+        })
       })
       .catch(error => this.setState({
         error: error
@@ -82,30 +71,23 @@ class Group extends Component {
 
   render() {
     const { classes } = this.props;
-    const error = this.state.error;
-    const existingURL = `/group`;
     return (
       <main className={classes.layout}>
         <div className={classes.heroContent}>
           <Typography component="h1" variant="h2" align="center" color="textPrimary" gutterBottom>
-            Create New Split Payment
-          </Typography>
-          <Typography variant="subtitle1" align="center" color="textSecondary" component ="p">
-            Create a Group and then share its link with other payees.
+            Logout.
           </Typography>
           <Grid container spacing={32} justify="space-evenly" className={classes.container}>
             <Grid item xs className={classes.grid}>
               {
-                (this.state.group) 
-                ? (
+                (this.state.groupLeft && this.state.loggedOut)
+                  ? (
                     <Typography variant="subtitle2" align="center" color="textSecondary" component="p">
-                      You are already a member of a group and are unable to join another.
-                      The group is located at endpoint <Link to={existingURL}>{existingURL}</Link>
+                      You have logged out and can now close this window.
                     </Typography>
-                )
-                : <Button onClick={this.createGroup} variant="outlined" >Create</Button>
+                  )
+                  : <Button onClick={this.leaveGroup} variant="outlined" >Press here to logout.</Button>
               }
-              {(error) ? <p>Error creating item -> {error}</p> : null }
             </Grid>
           </Grid>
         </div>
@@ -114,4 +96,4 @@ class Group extends Component {
   }
 }
 
-export default withStyles(styles)(Group);
+export default withStyles(styles)(Logout);

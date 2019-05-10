@@ -30,7 +30,7 @@ class starlingName extends Component {
   componentDidMount() {
     axios.get('/api/starling/info')
       .then(result => this.setState({
-        username: `${result.data.firstName} ${result.data.lastName}`
+        username: `${result.data.name.first} ${result.data.name.last}`
       }))
       .catch(error => this.setState({
         error

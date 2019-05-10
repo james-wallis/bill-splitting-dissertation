@@ -15,11 +15,6 @@ const sessionOptions = {
 const session = expressSession(sessionOptions);
 
 module.exports = function(app) {
-  if (app.get('env') === 'production') {
-    app.set('trust proxy', 1) // trust first proxy
-    sessionOptions.cookie.secure = true // serve secure cookies
-  }
-
   app.use(session);
 
   app.locals.socketSession = socketSession(session, {
