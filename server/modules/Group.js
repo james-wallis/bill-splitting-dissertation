@@ -37,10 +37,16 @@ class Group {
       console.log('New user connected to Group', this.id);
       socket.emit('lead-status', this.isLeadMember(socket.handshake.sessionID));
 
-      socket.on('admin-options', (opts) => {
-        this.setSplitMethod(opts.method);
-        this.setPaymentAmount(opts.amount);
+      socket.on('admin-options', async (opts) => {
+        await this.setPaymentAmount(opts.amount);
+        await this.setSplitMethod(opts.method);
         emitGroupDetails();
+        // Update all users with their new amounts
+        if (this.method === 'EVEN') {
+          for (let id in io.sockets) {
+            emitUserDetails(io.sockets[id]);
+          }
+        }
       })
 
       socket.on('user-amount', async (amount, tip) => {
@@ -59,10 +65,11 @@ class Group {
         this.initiatePayment();
       })
 
-      const emitUserDetails = () => {
-        const userID = socket.handshake.sessionID;
+      // Allow socket as a parameter but by default use the current socket
+      const emitUserDetails = (s = socket) => {
+        const userID = s.handshake.sessionID;
         const user = (this.isLeadMember(userID)) ? this.getLeadMember() : this.getOtherMember(userID);
-        socket.emit('user-details', user.getPublicUser());
+        if (user) s.emit('user-details', user.getPublicUser());
       }
       const emitGroupDetails = () => io.emit('group-details', this.toString());
       const emitDetails = () => {
@@ -70,6 +77,14 @@ class Group {
         emitUserDetails();
       }
       emitDetails();
+
+      // If the method is even then update each users amount
+      if (this.method === 'EVEN') {
+        this.updateEvenSplitAmounts();
+        for (let id in io.sockets) {
+          emitUserDetails(io.sockets[id]);
+        }
+      }
     });
   }
 
@@ -162,8 +177,23 @@ class Group {
   setSplitMethod(newMethod) {
     if (splitMethods.indexOf(newMethod) >= 0) {
       this.method = newMethod;
+      // If split method is even then set all user amounts to even amounts
+      if (newMethod === 'EVEN') this.updateEvenSplitAmounts();
     } else {
       console.error('Group.js/setSplitMethod: invalid split method')
+    }
+  }
+
+  updateEvenSplitAmounts() {
+    const individualAmount = (this.amount) ? (this.amount / (this.otherMembers.length + 1)) : 0;
+    this.leadMember.setPaymentAmount({
+      amount: individualAmount
+    });
+    for (let i = 0; i < this.otherMembers.length; i++) {
+      const user = this.otherMembers[i];
+      user.setPaymentAmount({
+        amount: individualAmount
+      });
     }
   }
 
@@ -172,6 +202,7 @@ class Group {
   }
 
   updateUserAmount(userID, newAmount, newTip) {
+    if (this.method === 'EVEN') newAmount = null; // If the method is to split evenly then a newAmount cannot be added
     const user = (this.isLeadMember(userID)) ? this.getLeadMember() : this.getOtherMember(userID);
     user.setPaymentAmount({ 
       amount: newAmount,

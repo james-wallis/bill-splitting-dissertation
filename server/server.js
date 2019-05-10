@@ -14,12 +14,6 @@ app.locals.tokens = {
   expires: null
 }
 
-app.locals.socket.on('connection', function (socket) {
-  console.log('someone connected');
-  console.log('Socket Session');
-  console.log('sessionID', socket.handshake.sessionID);
-});
-
 // Session
 require('./routes/session')(app);
 
@@ -30,3 +24,8 @@ app.use('/api/starling', require('./routes/starling'));
 app.use(require('./routes/ui'));
 
 server.listen(process.env.PORT || 3001);
+
+if(process.env.NODE_ENV && process.env.NODE_ENV === 'prod') {
+  console.log('\nBill-splitting dissertation application');
+  console.log('Open a browser at port:', (process.env.PORT || 3001));
+}

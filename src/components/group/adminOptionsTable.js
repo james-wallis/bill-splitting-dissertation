@@ -40,6 +40,10 @@ class AdminOptionsTable extends Component {
   updateAdmin = () => {
     const amount = this.state.amount;
     const method = this.state.method;
+    console.log({
+      amount: amount,
+      method: method
+    });
     this.props.socket.emit('admin-options', {
       amount: amount,
       method: method

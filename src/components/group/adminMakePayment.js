@@ -60,7 +60,8 @@ class AdminMakePayment extends Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, totalToPay, totalAmount, totalTip } = this.props;
+    const differenceBetweenTotals = totalToPay - totalAmount;
     return (
       <div className={classes.root}>
         <h2>Make the payment</h2>
@@ -69,6 +70,36 @@ class AdminMakePayment extends Component {
         <Button onClick={this.handleClickOpen} disabled={!this.state.readyToMakePayment} variant="contained" color="secondary" className={classes.button}>
           MAKE PAYMENT
         </Button>
+        {
+          (differenceBetweenTotals > 0 || totalAmount === 0) 
+          ?
+        <Dialog
+          open={this.state.open}
+          keepMounted
+          onClose={this.handleClose}
+          fullWidth
+          aria-labelledby="Instruct more to pay"
+          aria-describedby="Dialog to inform the lead user there is more money to pay">
+          <DialogTitle id="alert-dialog-slide-title">
+            {(totalAmount === 0) ? 'Need to set amount to pay.' : 'Need to add more money.'}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              {(totalAmount !== 0) ? 
+              'The total amount that you\'re group has pledged is less than the total bill amount. Please discuss adding additional funding to the group payment with other members of the group.'
+              : 'You need to add the amount you wish to pay before the payment can work. See the "admin options" section at the top of the screen.'}
+            </DialogContentText>
+            <DialogContentText id="alert-dialog-description">
+                  {(totalAmount !== 0) ? `Another &pound;${differenceBetweenTotals} is required.` : null}
+            </DialogContentText>
+            <DialogActions>
+            <Button onClick={this.handleClose} variant="outlined" color="primary">
+                Close
+            </Button>
+            </DialogActions>
+          </DialogContent>
+        </Dialog>
+          :
         <Dialog
           open={this.state.open}
           keepMounted
@@ -81,7 +112,7 @@ class AdminMakePayment extends Component {
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              Make the payment?
+              Make the payment of &pound;{totalAmount} and a tip amount of &pound;{totalTip}?
             </DialogContentText>
             <DialogActions>
               <Button onClick={this.handleClose} color="primary">
@@ -93,6 +124,7 @@ class AdminMakePayment extends Component {
             </DialogActions>
           </DialogContent>
         </Dialog>
+        }
       </div>
     );
   }

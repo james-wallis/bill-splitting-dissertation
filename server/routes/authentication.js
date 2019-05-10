@@ -20,10 +20,13 @@ router.get('/auth/redirect', async (req, res) => {
       tokens.expires = data.expires_in;
       const userData = await starling.getIdentity(data.access_token);
       const users = req.app.locals.users;
-      // Testing file save start
-      const userCount = Object.keys(users.users).length;
-      fs.writeJson(`./token-store/${userCount}.json`, tokens);
-      // Testing file save end
+      if (!process.env.NODE_ENV || process.env.NODE_ENV !== 'prod') {
+        // If not production safe the access tokens to file for later use
+        // Testing file save start
+        const userCount = Object.keys(users.users).length;
+        fs.writeJson(`./token-store/${userCount}.json`, tokens);
+        // Testing file save end
+      }
       users.add(req.session.id, data.access_token, userData);
     } else {
       throw new Error('Token is not of type Bearer.')
@@ -40,11 +43,11 @@ router.all('*', async (req, res, next) => {
   try {
     const users = req.app.locals.users;
     const authenticated = await users.checkExists(req.session.id);
-    // if (!authenticated) return res.redirect('/login');
-    // Testing file save start
     if (!authenticated) {
+      if (process.env.NODE_ENV && process.env.NODE_ENV === 'prod') return res.redirect('/login');
+      // If not production then use the access token from development file.
+      // Testing file save start
       const userCount = Object.keys(users.users).length;
-      console.log('userCount', userCount);
       let newTokens = null;
       try {
         newTokens = await fs.readJson(`./token-store/${userCount}.json`, { throws: true });
@@ -60,8 +63,8 @@ router.all('*', async (req, res, next) => {
       }
       const userData = await starling.getIdentity(newTokens.access);
       users.add(req.session.id, newTokens.access, userData);
-    }
     // Testing file save end
+    }
     req.accessToken = await users.getStarlingAuthToken(req.session.id);
   }
   catch (err) {

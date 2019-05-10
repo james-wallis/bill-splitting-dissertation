@@ -31,18 +31,6 @@ class Summary extends Component {
     };
   }
 
-  calculateTotal = (lead, members) => {
-    let totalAmount = 0;
-    let totalTip = 0;
-    totalAmount += lead.payment.amount;
-    totalTip += lead.payment.tip;
-    for (let i = 0; i < members.length; i++) {
-      totalAmount += members[i].payment.amount;
-      totalTip += members[i].payment.tip;
-    }
-    return { totalAmount, totalTip };
-  }
-
   commitToPayment = (event) => {
     this.setState({
       committed: event.target.checked
@@ -52,9 +40,8 @@ class Summary extends Component {
   }
 
   render() {
-    const { classes, lead, members, totalToPay } = this.props;
-    const { totalAmount, totalTip } = this.calculateTotal(lead, members);
-    const differenceBetweenTotals = totalToPay - totalAmount;
+    const { classes, totalToPay, totalAmount, totalTip } = this.props;
+    const differenceBetweenTotals = +(totalToPay - totalAmount).toFixed(2);
     const amountLeftColor = (differenceBetweenTotals > 0) ? 'red' : 'green';
     let amountLeftText = 'Perfect';
     if (differenceBetweenTotals > 0) amountLeftText = 'More to pay';

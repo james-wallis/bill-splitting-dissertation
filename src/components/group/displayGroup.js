@@ -89,10 +89,23 @@ class DisplayGroup extends Component {
     })
   }
 
+  calculateTotal = (lead, members) => {
+    let totalAmount = 0;
+    let totalTip = 0;
+    totalAmount += lead.payment.amount;
+    totalTip += lead.payment.tip;
+    for (let i = 0; i < members.length; i++) {
+      totalAmount += members[i].payment.amount;
+      totalTip += members[i].payment.tip;
+    }
+    return { totalAmount, totalTip };
+  }
+
   render = () => {
     const { classes } = this.props;
     const { group, isLead, disableYourOptions, user, group_closed, paymentStatus } = this.state;
     const ownership = ((group.leadMember && group.leadMember.name.last.slice(-1) === 's') ? '\'' : '\'s');
+    const { totalAmount, totalTip } = this.calculateTotal(group.leadMember, group.otherMembers);
     return (
       <div>
         {
@@ -133,11 +146,11 @@ class DisplayGroup extends Component {
                   {(isLead) ? <AdminOptions socket={this.socket} amount={group.amount} method={group.method} /> : <AmountAndMethod amount={group.amount} method={group.method} />}
                   {/* <Display /> */}
                   <Divider />
-                  <UserOptions disabled={disableYourOptions} totalAmount={group.amount} currentUserAmounts={user.payment} socket={this.socket} />
+                  <UserOptions disabled={disableYourOptions} totalAmount={group.amount} currentUserAmounts={user.payment} socket={this.socket} method={group.method} />
                   <Divider />
-                  <Summary togglePayment={this.toggleYourOptions} socket={this.socket} totalToPay={group.amount} lead={group.leadMember} members={group.otherMembers} />
+                  <Summary togglePayment={this.toggleYourOptions} socket={this.socket} totalToPay={group.amount} totalAmount={totalAmount} totalTip={totalTip} />
                   <GroupTable lead={group.leadMember} members={group.otherMembers} />
-                  {(isLead) ? <MakePayment socket={this.socket} groupID={group.id} /> : null}
+                  {(isLead) ? <MakePayment socket={this.socket} groupID={group.id} totalToPay={group.amount} totalAmount={totalAmount} totalTip={totalTip}/> : null}
                 </div>
               }
 

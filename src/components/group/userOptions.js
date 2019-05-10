@@ -64,7 +64,7 @@ class UserOptions extends Component {
   }
 
   render() {
-    const { classes, disabled, currentUserAmounts } = this.props;
+    const { classes, disabled, currentUserAmounts, method } = this.props;
     const { amountValid, tipValid } = this.state;
     const currentUserAmount = (currentUserAmounts && currentUserAmounts.amount) ? currentUserAmounts.amount : 0;
     const currentUserTip = (currentUserAmounts && currentUserAmounts.tip) ? currentUserAmounts.tip : 0;
@@ -76,6 +76,8 @@ class UserOptions extends Component {
         <h2>Your options</h2>
         <p>Enter the amount you are willing to pay and tip.</p>
         <Grid container spacing={24} className={classes.gridContainer}>
+        {(method === 'CUSTOM')
+        ?  
           <Grid item xs={6} sm={3}>
             <TextField
               error={!amountValid}
@@ -88,6 +90,13 @@ class UserOptions extends Component {
               disabled={disabled}
             />
           </Grid>
+        :
+          <Grid item xs={6} sm={3}>
+            <p>Bill is being split evenly.</p>
+            <p>Amount you will pay &pound;{(currentUserAmount) ? currentUserAmount : 0}</p>
+          </Grid>
+        }
+          
           <Grid item xs={6} sm={3}>
             <TextField
               error={!tipValid}
